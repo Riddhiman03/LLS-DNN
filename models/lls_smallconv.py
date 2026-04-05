@@ -86,7 +86,7 @@ class LLS_SmallConv(nn.Module):
             if lr_scheduler == "MultiStepLR":
                 self.lr_scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer, gamma=gamma, milestones=milestones)
             elif lr_scheduler == "ReduceLROnPlateau":
-                self.lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, factor=gamma, patience=patience, verbose = True)
+                self.lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, factor=gamma, patience=patience)
 
     def lr_scheduler_step(self, loss_avg=None):
         if loss_avg is None:

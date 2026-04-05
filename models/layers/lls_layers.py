@@ -191,7 +191,7 @@ class LLS_layer(nn.Module):
             if lr_scheduler == "MultiStepLR":
                 self.lr_scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer, gamma=gamma, milestones=milestones)
             elif lr_scheduler == "ReduceLROnPlateau":
-                self.lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, factor=gamma, patience=patience, verbose = True)
+                self.lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, factor=gamma, patience=patience)
 
         self.loss_hist = 0
         self.samples = 0
