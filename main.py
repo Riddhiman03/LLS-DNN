@@ -12,6 +12,10 @@ import warnings
 import argparse
 import os
 import itertools
+# This tells the Orin's Tensor Cores to use TF32 for matrix multiplications and convolutions.
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
@@ -352,7 +356,9 @@ if __name__ == '__main__':
                                             lr_scheduler=lr_scheduler, patience=patience, temperature=temperature,
                                             label_smoothing=label_smoothing, dropout=dropout, waveform=waveform)
         model = model.cuda()
-
+        # This heavily optimizes the graph and reduces Python CPU overhead, 
+        # which is a major bottleneck on ARM CPUs.
+        model = torch.compile(model)
         total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         logging.info("Number of trainable params: {0}".format(total_params))
 
