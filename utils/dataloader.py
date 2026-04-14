@@ -31,12 +31,12 @@ def vww_dataloader(batch_size=64, test_batch_size=128, path_for_dataset="./data/
     train_dataset = pyvww.pytorch.VisualWakeWordsClassification(root=path_for_dataset + "all2014",
                                                                 annFile=path_for_dataset + "annotations/instances_train.json",
                                                                 transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=16, pin_memory=True)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=16, pin_memory=True, persistent_workers=True)
 
     test_dataset = pyvww.pytorch.VisualWakeWordsClassification(root=path_for_dataset + "all2014",
                                                                annFile=path_for_dataset + "VWW/annotations/instances_val.json",
                                                                 transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=test_batch_size, shuffle=False, num_workers=16, pin_memory=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     return (train_loader, test_loader, test_loader)
 
@@ -69,8 +69,8 @@ def imagenet_dataloader(batch_size=64, test_batch_size=128):
             normalize,
         ]))
 
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=16)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=16)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     return (train_loader, test_loader, test_loader)
 
@@ -94,13 +94,13 @@ def imagenette_dataloader(batch_size, test_batch_size=128):
     ])
 
     trainset = torchvision.datasets.Imagenette('~/Datasets', split='train', download=False, size='160px', transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True, persistent_workers=True)
 
     traintestset = torchvision.datasets.Imagenette('~/Datasets', split='train', download=False, size='160px', transform=transform_test)
-    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     testset = torchvision.datasets.Imagenette('~/Datasets', split='val', download=False, size='160px', transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
@@ -124,13 +124,13 @@ def imagenette_basic_dataloader(batch_size, test_batch_size=128):
     ])
 
     trainset = torchvision.datasets.Imagenette('~/Datasets', split='train', download=False, size='160px', transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True, persistent_workers=True)
 
     traintestset = torchvision.datasets.Imagenette('~/Datasets', split='train', download=False, size='160px', transform=transform_test)
-    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     testset = torchvision.datasets.Imagenette('~/Datasets', split='val', download=False, size='160px', transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
@@ -163,9 +163,9 @@ def tinyimagenet_dataloader(batch_size, test_batch_size=128, path_for_dataset=".
             normalize,
         ]))
 
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
-    traintest_loader = torch.utils.data.DataLoader(valset, batch_size=test_batch_size, shuffle=False, num_workers=2)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True, persistent_workers=True)
+    traintest_loader = torch.utils.data.DataLoader(valset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
@@ -187,13 +187,13 @@ def cifar100_augmented_dataloader(batch_size, test_batch_size=128):
 
     trainset = torchvision.datasets.CIFAR100('~/Datasets', train=True, download=True, transform=transform_train)
 
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True, persistent_workers=True)
 
     traintestset = torchvision.datasets.CIFAR100('~/Datasets', train=True, download=True, transform=transform_test)
-    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     testset = torchvision.datasets.CIFAR100('~/Datasets', train=False, download=True, transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
@@ -213,13 +213,13 @@ def cifar100_dataloader(batch_size, test_batch_size=128):
     ])
 
     trainset = torchvision.datasets.CIFAR100('~/Datasets', train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True, persistent_workers=True)
 
     traintestset = torchvision.datasets.CIFAR100('~/Datasets', train=True, download=True, transform=transform_test)
-    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     testset = torchvision.datasets.CIFAR100('~/Datasets', train=False, download=True, transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=2, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
@@ -241,13 +241,13 @@ def cifar10_augmented_dataloader(batch_size, test_batch_size=128):
     ])
 
     trainset = torchvision.datasets.CIFAR10('~/Datasets', train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
 
     traintestset = torchvision.datasets.CIFAR10('~/Datasets', train=True, download=True, transform=transform_test)
-    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False)
+    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     testset = torchvision.datasets.CIFAR10('~/Datasets', train=False, download=True, transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
@@ -267,13 +267,13 @@ def cifar10_basic_dataloader(batch_size, test_batch_size=128):
     ])
 
     trainset = torchvision.datasets.CIFAR10('~/Datasets', train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
 
     traintestset = torchvision.datasets.CIFAR10('~/Datasets', train=True, download=True, transform=transform_test)
-    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False)
+    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     testset = torchvision.datasets.CIFAR10('~/Datasets', train=False, download=True, transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
@@ -294,13 +294,13 @@ def mnist_dataloader(batch_size, test_batch_size=128):
     ])
 
     trainset = torchvision.datasets.MNIST('~/Datasets', train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
 
     traintestset = torchvision.datasets.MNIST('~/Datasets', train=True, download=True, transform=transform_test)
-    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False)
+    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     testset = torchvision.datasets.MNIST('~/Datasets', train=False, download=True, transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
@@ -321,13 +321,13 @@ def fashionmnist_dataloader(batch_size, test_batch_size=128):
     ])
 
     trainset = torchvision.datasets.FashionMNIST('~/Datasets', train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
 
     traintestset = torchvision.datasets.FashionMNIST('~/Datasets', train=True, download=True, transform=transform_test)
-    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False)
+    traintest_loader = torch.utils.data.DataLoader(traintestset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     testset = torchvision.datasets.FashionMNIST('~/Datasets', train=False, download=True, transform=transform_test)
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False)
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
 
     return (train_loader, traintest_loader, test_loader)
 
