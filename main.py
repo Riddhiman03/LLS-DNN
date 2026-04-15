@@ -12,6 +12,7 @@ import warnings
 import argparse
 import os
 import itertools
+from torch.cuda.amp import autocast, GradScaler # ---> OPTIMIZATION 1: Import AMP
 # This tells the Orin's Tensor Cores to use TF32 for matrix multiplications and convolutions.
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
@@ -56,7 +57,7 @@ def training_fn(trainloader, model, optimizer, num_epochs=100, testloader=None, 
     criterion = nn.CrossEntropyLoss()
 
     best_acc = 0
-
+    scaler = GradScaler() #Initialize the Gradient Scaler for FP16 training
     for epoch in range(num_epochs):
         if hasattr(model, "print_stats"):
             model.print_stats()
@@ -92,18 +93,21 @@ def training_fn(trainloader, model, optimizer, num_epochs=100, testloader=None, 
             data_time.update(time.time() - end)
 
             batch_size = inputs.size(0)
-            inputs = inputs.cuda()
-            labels = labels.cuda()
+            inputs = inputs.cuda(non_blocking=True)
+            labels = labels.cuda(non_blocking=True)
             if not training_mode == "BP":
-                outputs = model(inputs, labels)
+                with autocast():
+                    outputs = model(inputs, labels)
                 with torch.no_grad():
                     loss = criterion(outputs, labels)
             else:
-                optimizer.zero_grad()
-                outputs = model(inputs, labels if model.training_mode in ["DFA", "DRTP"] else None)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
+                with autocast():
+                    outputs = model(inputs, labels if model.training_mode in ["DFA", "DRTP"] else None)
+                    loss = criterion(outputs, labels)
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
 
             if num_classes > 5:
                 acc1, acc5 = accuracy(outputs, labels, topk=(1, 5) )
