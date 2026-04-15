@@ -31,11 +31,12 @@ def test_fn(testloader, model, num_classes=10):
         model.eval()
         for i, data in enumerate(testloader, 0):
             inputs, labels = data
-            inputs = inputs.cuda()
-            labels = labels.cuda()
+            inputs = inputs.cuda(non_blocking=True)
+            labels = labels.cuda(non_blocking=True)
             batch_size = inputs.size(0)
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            with autocast():
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
             if num_classes > 5:
                 acc1, acc5 = accuracy(outputs, labels, topk=(1, 5))
             else:
