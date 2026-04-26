@@ -4,6 +4,7 @@ from utils import AdamWScheduleFree, SGDScheduleFree
 import torch.optim as optim
 from torch.nn import functional as F
 import numpy as np
+from lls_fused import fused_lls_loss
 
 __all__ = ["LLS_layer", "LinearBlock", "ConvBlock", "ConvDWBlock"]
 
@@ -37,26 +38,60 @@ def compute_LocalLosses(activation, labels, local_classifier, temperature=1, lab
     return loss
 
 
+# def compute_LLS(activation, labels, temperature=1, label_smoothing=0.0, act_size=1, n_classes=10,
+#                 modulation_term=None, modulation=False, freq=None, waveform="cosine"):
+#     batch_size = activation.size(0)
+#     if activation.dim() == 4:
+#         latents = F.adaptive_avg_pool2d(activation, (act_size, act_size)).view(batch_size, -1)
+#     else:
+#         latents = F.adaptive_avg_pool1d(activation, act_size).view(batch_size, -1)
+#     basis = generate_frequency_matrix(n_classes, latents.size(1), max_freq=512, freq=freq).cuda()
+#     # basis = generate_frequency_matrix(n_classes, latents.size(1), max_freq=latents.size(1) - 50).cuda()
+#     if waveform == "square":
+#         basis = torch.sign(basis)
+
+#     latents = F.normalize(latents, dim=1)
+#     layer_pred = torch.matmul(latents, basis.T)
+#     if modulation == 1:
+#         layer_pred = modulation_term*layer_pred
+#     if modulation == 2:
+#         layer_pred = torch.matmul(layer_pred, modulation_term)
+#     loss = torch.nn.functional.cross_entropy(layer_pred / temperature, labels, label_smoothing=label_smoothing)
+#     return loss
+
+
+
 def compute_LLS(activation, labels, temperature=1, label_smoothing=0.0, act_size=1, n_classes=10,
-                modulation_term=None, modulation=False, freq=None, waveform="cosine"):
+                modulation_term=None, modulation=False, freq=None, waveform="cosine", cache_owner=None):
     batch_size = activation.size(0)
     if activation.dim() == 4:
         latents = F.adaptive_avg_pool2d(activation, (act_size, act_size)).view(batch_size, -1)
     else:
         latents = F.adaptive_avg_pool1d(activation, act_size).view(batch_size, -1)
-    basis = generate_frequency_matrix(n_classes, latents.size(1), max_freq=512, freq=freq).cuda()
-    # basis = generate_frequency_matrix(n_classes, latents.size(1), max_freq=latents.size(1) - 50).cuda()
-    if waveform == "square":
-        basis = torch.sign(basis)
 
+    # Get cached basis (your existing caching code)
+    cache_key = (n_classes, latents.size(1), waveform)
+    if cache_owner is not None and cache_owner._basis_cache is not None:
+        basis = cache_owner._basis_cache
+    else:
+        basis = generate_frequency_matrix(n_classes, latents.size(1), max_freq=512, freq=freq).cuda()
+        if waveform == "square":
+            basis = torch.sign(basis)
+        if cache_owner is not None:
+            cache_owner._basis_cache = basis
+
+    # ─── Fused path: only for vanilla LLS, no modulation, no label smoothing ───
+    if modulation == 0 and label_smoothing == 0.0:
+        return fused_lls_loss(latents.contiguous(), basis.contiguous(), labels, temperature)
+
+    # ─── Fallback to original implementation for modulation cases ───
     latents = F.normalize(latents, dim=1)
     layer_pred = torch.matmul(latents, basis.T)
     if modulation == 1:
-        layer_pred = modulation_term*layer_pred
+        layer_pred = modulation_term * layer_pred
     if modulation == 2:
         layer_pred = torch.matmul(layer_pred, modulation_term)
-    loss = torch.nn.functional.cross_entropy(layer_pred / temperature, labels, label_smoothing=label_smoothing)
-    return loss
+    return F.cross_entropy(layer_pred / temperature, labels, label_smoothing=label_smoothing)
 
 
 def compute_LLS_Random(activation, labels, random_basis, temperature=1, label_smoothing=0.0, act_size=8):
